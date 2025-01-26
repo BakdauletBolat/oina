@@ -2,7 +2,7 @@ from django.db import transaction
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework.exceptions import APIException
-from rest_framework.generics import get_object_or_404
+from rest_framework.generics import get_object_or_404, ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -137,6 +137,12 @@ class GameDetailView(APIView):
     def get(self, request, pk: int, *args, **kwargs):
         game = get_object_or_404(Game, pk=pk)
         return Response(GameDetailSerializer(game).data)
+
+
+class GameListView(ListAPIView):
+
+    permission_classes = (IsAuthenticated, )
+    serializer_class = GameDetailSerializer
 
 
 
