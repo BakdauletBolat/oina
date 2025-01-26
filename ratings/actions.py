@@ -40,7 +40,7 @@ class GameCalculateAction:
 
     @staticmethod
     def handle(winner_id: int, looser_id: int):
-        loser_game_count = Game.objects.filter(looser_id=looser_id).count()
+        loser_game_count = Game.objects.filter(loser_id=looser_id).count()
         winner_game_count = Game.objects.filter(winner_id=winner_id).count()
 
         user_models.User.objects.filter(pk=winner_id).update(winning_sum=winner_game_count+1)

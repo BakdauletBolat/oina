@@ -108,7 +108,6 @@ class GameResultApproveView(APIView):
         game = Game.objects.get(pk=pk)
 
         if game.status == game.Status.finished:
-
             raise APIException('Game already finished')
 
         if game.rival_id == request.user.id and game.rival_approved_at is None:

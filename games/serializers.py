@@ -21,6 +21,7 @@ class AuthorSerializer(serializers.Serializer):
 
 class GameDetailSerializer(serializers.Serializer):
 
+    id = serializers.IntegerField()
     author = AuthorSerializer()
     rival = AuthorSerializer()
     created_at = serializers.DateTimeField()
