@@ -15,6 +15,11 @@ class AuthSerializer(serializers.Serializer):
     password = serializers.CharField(required=False)
 
 
+class AuthResponseSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+    access = serializers.CharField()
+
+
 class UserDetailsSerializer(serializers.Serializer):
 
     username = serializers.CharField()

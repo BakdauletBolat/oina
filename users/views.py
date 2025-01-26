@@ -6,6 +6,7 @@ import sys
 
 from django.conf import settings
 from django.contrib.auth import authenticate
+from drf_spectacular.utils import extend_schema
 from rest_framework import views
 from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticated
@@ -13,13 +14,15 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from loguru import logger
 
+from oina.serializers import ErrorSerializer
 from users.models import User
-from users.serializers import AuthSerializer, UserDetailsSerializer
+from users.serializers import AuthSerializer, UserDetailsSerializer, AuthResponseSerializer
 
 logger.remove()
 logger.add(sys.stdout, colorize=True, format="<green>{time}</green> <level>{message}</level> - {extra}")
 
 class AuthView(views.APIView):
+    serializer_class = AuthSerializer
 
     @staticmethod
     def parse_token_data(tg_auth_result: str):
@@ -34,6 +37,10 @@ class AuthView(views.APIView):
                         auth_data=tg_auth_result).error("Error decoding auth data")
             return None
 
+    @extend_schema(responses={
+        200: AuthResponseSerializer(),
+        500: ErrorSerializer()
+    })
     def post(self, request, *args, **kwargs):
         serializer = AuthSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -44,7 +51,7 @@ class AuthView(views.APIView):
             logger.info("Trying to auth with Telegram API ...")
 
             auth_data = self.parse_token_data(data.get('token'))
-            print(auth_data)
+
             if not auth_data:
                 logger.bind(token=data.get('token')).error("Invalid telegram token")
                 raise APIException("Invalid telegram token")
@@ -90,5 +97,9 @@ class UserMeView(views.APIView):
 
     permission_classes = (IsAuthenticated,)
 
+    @extend_schema(responses={
+        200: UserDetailsSerializer(),
+        500: ErrorSerializer()
+    })
     def get(self, request, *args, **kwargs):
         return Response(UserDetailsSerializer(request.user).data)

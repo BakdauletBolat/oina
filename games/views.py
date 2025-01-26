@@ -1,5 +1,6 @@
 from django.db import transaction
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
@@ -8,6 +9,7 @@ from rest_framework.views import APIView
 
 from games.models import Game
 from games.serializers import GameDetailSerializer, GameRequestSerializer, GameResultApproveSerializer
+from oina.serializers import ErrorSerializer
 from ratings.actions import RatingCalculateAction, GameCalculateAction
 
 
@@ -16,6 +18,10 @@ class GameRequestView(APIView):
     permission_classes = (IsAuthenticated, )
     serializer_class = GameRequestSerializer
 
+    @extend_schema(responses={
+        200: GameDetailSerializer(),
+        500: ErrorSerializer()
+    })
     @transaction.atomic
     def post(self, request, *args, **kwargs):
 
@@ -38,6 +44,10 @@ class GameStartView(APIView):
 
     permission_classes = (IsAuthenticated, )
 
+    @extend_schema(responses={
+        200: GameDetailSerializer(),
+        500: ErrorSerializer()
+    })
     @transaction.atomic
     def get(self, request, pk: int,  *args, **kwargs):
 
@@ -84,6 +94,10 @@ class GameResultApproveView(APIView):
 
         game.status = game.Status.result_awaiting
 
+    @extend_schema(responses={
+        200: GameDetailSerializer(),
+        500: ErrorSerializer()
+    })
     @transaction.atomic
     def post(self, request, pk: int, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -117,6 +131,10 @@ class GameResultApproveView(APIView):
 
 class GameDetailView(APIView):
 
+    @extend_schema(responses={
+        200: GameDetailSerializer(),
+        500: ErrorSerializer()
+    })
     def get(self, request, pk: int, *args, **kwargs):
         game = get_object_or_404(Game, pk=pk)
         return Response(GameDetailSerializer(game).data)
