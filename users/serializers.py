@@ -22,6 +22,7 @@ class AuthResponseSerializer(serializers.Serializer):
 
 class UserDetailsSerializer(serializers.Serializer):
 
+    id = serializers.IntegerField()
     username = serializers.CharField()
     last_name = serializers.CharField(required=False)
     first_name = serializers.CharField(required=False)

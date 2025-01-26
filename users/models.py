@@ -61,3 +61,5 @@ class User(AbstractBaseUser, PermissionsMixin):
             actions.RatingCreateAction.handle(
                 user_id=self.id,
                 point=actions.MINIMAL_POINT)
+            self.rating_sum = actions.MINIMAL_POINT
+            self.save()

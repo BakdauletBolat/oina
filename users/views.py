@@ -8,10 +8,12 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from drf_spectacular.utils import extend_schema
 from rest_framework import views
+from rest_framework.generics import ListAPIView
 from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.filters import SearchFilter
 from loguru import logger
 
 from oina.serializers import ErrorSerializer
@@ -103,3 +105,10 @@ class UserMeView(views.APIView):
     })
     def get(self, request, *args, **kwargs):
         return Response(UserDetailsSerializer(request.user).data)
+
+
+class UsersListView(ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserDetailsSerializer
+    filter_backends = (SearchFilter,)
+    search_fields = ('username', 'first_name', 'last_name')
