@@ -2,10 +2,10 @@ version: "3.8"
 
 services:
   fastapi_app:
-    image: ${IMAGE}
+    build: ${IMAGE}
     container_name: django_app
     ports:
-      - "8000:8000"
+      - "8001:8000"
     environment:
       TZ: "UTC"
     env_file:
