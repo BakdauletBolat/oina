@@ -145,7 +145,7 @@ REST_FRAMEWORK = {
     ),
     'EXCEPTION_HANDLER': 'oina.exception_handler.custom_exception_handler',
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 20  # Количество записей на одной странице
 }
 
