@@ -45,4 +45,4 @@ COPY . /app
 # Переключаемся на пользователя django
 USER django
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "oina.wsgi:application"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--access-logfile", "-", "--error-logfile", "-", "oina.wsgi:application"]
