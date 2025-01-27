@@ -2,6 +2,7 @@ from django.db import transaction
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework.exceptions import APIException
+from rest_framework.filters import OrderingFilter
 from rest_framework.generics import get_object_or_404, ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -143,6 +144,8 @@ class GameListView(ListAPIView):
 
     serializer_class = GameDetailSerializer
     queryset = Game.objects.all()
+    filter_backends = (OrderingFilter, )
+    ordering = ['-rating_sum']
 
 
 
