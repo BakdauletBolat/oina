@@ -144,8 +144,6 @@ class GameListView(ListAPIView):
 
     serializer_class = GameDetailSerializer
     queryset = Game.objects.all()
-    filter_backends = (OrderingFilter, )
-    ordering = ['-rating_sum']
 
 
 

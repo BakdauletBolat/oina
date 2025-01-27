@@ -13,7 +13,7 @@ from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.filters import SearchFilter
+from rest_framework.filters import SearchFilter, OrderingFilter
 from loguru import logger
 
 from oina.serializers import ErrorSerializer
@@ -110,5 +110,6 @@ class UserMeView(views.APIView):
 class UsersListView(ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserDetailsSerializer
-    filter_backends = (SearchFilter,)
+    filter_backends = (SearchFilter, OrderingFilter)
     search_fields = ('username', 'first_name', 'last_name')
+    ordering = ['-rating_sum']
