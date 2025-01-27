@@ -13,6 +13,7 @@ class GameResultApproveSerializer(serializers.Serializer):
 
 class AuthorSerializer(serializers.Serializer):
 
+    id = serializers.IntegerField()
     photo_url = serializers.CharField()
     username = serializers.CharField()
     first_name = serializers.CharField()
