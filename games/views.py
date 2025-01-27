@@ -141,7 +141,6 @@ class GameDetailView(APIView):
 
 class GameListView(ListAPIView):
 
-    permission_classes = (IsAuthenticated, )
     serializer_class = GameDetailSerializer
     queryset = Game.objects.all()
 
