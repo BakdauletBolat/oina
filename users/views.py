@@ -125,3 +125,11 @@ class UsersListView(ListAPIView):
     search_fields = ('username', 'first_name', 'last_name')
     ordering = ['-rating_sum']
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        if self.request.user.is_authenticated:
+            queryset = queryset.exclude(user=self.request.user)
+
+        return queryset
+
