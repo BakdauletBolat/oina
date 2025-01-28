@@ -1,8 +1,9 @@
 from django.db import transaction
+from django.db.models import Q
+from django.template.context_processors import request
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework.exceptions import APIException
-from rest_framework.filters import OrderingFilter
 from rest_framework.generics import get_object_or_404, ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -157,6 +158,20 @@ class GameListView(ListAPIView):
 
     serializer_class = GameDetailSerializer
     queryset = Game.objects.all()
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        if self.request.user.is_authenticated:
+            if self.kwargs.get('action') == 'user-games':
+                return queryset.filter(Q(author=self.request.user) | Q(rival=self.request.user))
+            if self.kwargs.get('action') == 'winning-user-games':
+                return queryset.filter(winner=self.request.user)
+            if self.kwargs.get('action') == 'winning-user-games':
+                return queryset.filter(loser=self.request.user)
+
+
+        return queryset
 
 
 
