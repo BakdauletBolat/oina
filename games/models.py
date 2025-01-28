@@ -18,7 +18,7 @@ class Game(models.Model):
     rival_approved_at = models.DateTimeField(null=True, blank=True)
     finished_at = models.DateTimeField(null=True, blank=True)
     game_type = models.CharField(default='FIFA', max_length=10)
-    result = models.JSONField(default=None)
+    result = models.JSONField(default=None, null=True)
     winner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='win_games', null=True, blank=True)
     loser = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='lose_games', null=True, blank=True)
     status = models.IntegerField(choices=Status.choices, default=Status.requested)
