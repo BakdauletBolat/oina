@@ -129,7 +129,7 @@ class UsersListView(ListAPIView):
         queryset = super().get_queryset()
 
         if self.request.user.is_authenticated:
-            queryset = queryset.exclude(user=self.request.user)
+            queryset = queryset.exclude(id=self.request.user.id)
 
         return queryset
 
