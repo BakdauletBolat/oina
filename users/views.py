@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from drf_spectacular.utils import extend_schema
 from rest_framework import views
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, get_object_or_404
 from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -107,9 +107,21 @@ class UserMeView(views.APIView):
         return Response(UserDetailsSerializer(request.user).data)
 
 
+class UserDetailView(views.APIView):
+
+    @extend_schema(responses={
+        200: UserDetailsSerializer(),
+        500: ErrorSerializer()
+    })
+    def get(self, request, pk: int, *args, **kwargs):
+        user = get_object_or_404(User, pk=pk)
+        return Response(UserDetailsSerializer(user).data)
+
+
 class UsersListView(ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserDetailsSerializer
     filter_backends = (SearchFilter, OrderingFilter)
     search_fields = ('username', 'first_name', 'last_name')
     ordering = ['-rating_sum']
+
