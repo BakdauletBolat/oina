@@ -8,7 +8,12 @@ class GameRequestSerializer(serializers.Serializer):
 
 
 class GameResultApproveSerializer(serializers.Serializer):
+    ACTION_TYPE_CHOICES = (
+        ('offer', 'Offer'),
+        ('approve', 'approve'),
+    )
     result = serializers.JSONField(allow_null=True, required=False)
+    action_type = serializers.ChoiceField(choices=ACTION_TYPE_CHOICES)
 
 
 class AuthorSerializer(serializers.Serializer):
@@ -31,7 +36,7 @@ class GameDetailSerializer(serializers.Serializer):
     rival_approved_at = serializers.DateTimeField(allow_null=True)
     finished_at = serializers.DateTimeField(allow_null=True)
     game_type = serializers.CharField()
-    result = serializers.JSONField(default=dict)
+    result = serializers.JSONField(default=None, allow_null=True)
     winner = AuthorSerializer(allow_null=True)
     loser = AuthorSerializer(allow_null=True)
     status = serializers.IntegerField()

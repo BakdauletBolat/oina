@@ -73,7 +73,8 @@ class GameResultApproveView(APIView):
     serializer_class = GameResultApproveSerializer
 
     @staticmethod
-    def result_set(data: dict, game: Game, type_set: str = 'rival'):
+    def result_set(data: dict, game: Game, offered_user_id: int,
+                   to_approve_user_id: int, type_set: str = 'rival'):
         attrs = {
             'rival': {
                 'to_none': 'author_approved_at',
@@ -94,6 +95,8 @@ class GameResultApproveView(APIView):
         setattr(game, attrs[type_set].get('to_set'), timezone.now())
 
         game.status = game.Status.result_awaiting
+        data['result']['offered_user_id'] = offered_user_id
+        data['result']['to_approve_user_id'] = to_approve_user_id
 
     @extend_schema(responses={
         200: GameDetailSerializer(),
@@ -111,12 +114,22 @@ class GameResultApproveView(APIView):
         if game.status == game.Status.finished:
             raise APIException('Game already finished')
 
-        if game.rival_id == request.user.id and game.rival_approved_at is None:
-            self.result_set(data, game, type_set='rival')
-        elif game.author_id == request.user.id and game.author_approved_at is None:
-            self.result_set(data, game, type_set='author')
+        if data.get('action_type') == 'offer':
+            if game.is_rival(request.user.id):
+                self.result_set(data, game, offered_user_id=game.rival_id,
+                                            to_approve_user_id=game.author_id,
+                                            type_set='rival')
+            elif game.is_author(request.user.id):
+                self.result_set(data, game, offered_user_id=game.author_id,
+                                            to_approve_user_id=game.rival_id,
+                                            type_set='author')
 
-        if game.rival_approved_at and game.author_approved_at:
+        if data.get('action_type') == 'approve':
+            if game.rival_approved_at is None:
+                game.rival_approved_at = timezone.now()
+            if game.author_approved_at is None:
+                game.author_approved_at = timezone.now()
+
             game.finished_at = timezone.now()
             game.winner_id = game.get_winner_id()
             game.loser_id = game.get_loser_id()
