@@ -168,5 +168,8 @@ SPECTACULAR_SETTINGS = {
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+CSRF_TRUSTED_ORIGINS = [
+       'https://oina-backend.bolatb.kz',
+]
 
 
