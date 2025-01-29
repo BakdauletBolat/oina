@@ -218,7 +218,7 @@ class GameListView(ListAPIView):
                 return queryset.filter(Q(author=self.request.user) | Q(rival=self.request.user), status__in=[0,1,2])
             if self.kwargs.get('action') == 'winning-user-games':
                 return queryset.filter(winner=self.request.user)
-            if self.kwargs.get('action') == 'winning-user-games':
+            if self.kwargs.get('action') == 'lose-user-games':
                 return queryset.filter(loser=self.request.user)
 
         return queryset
