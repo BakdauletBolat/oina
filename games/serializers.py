@@ -25,6 +25,13 @@ class AuthorSerializer(serializers.Serializer):
     last_name = serializers.CharField()
 
 
+class RatingSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    point = serializers.FloatField()
+    user = AuthorSerializer()
+    created_at = serializers.DateTimeField()
+
+
 class GameDetailSerializer(serializers.Serializer):
 
     id = serializers.IntegerField()
@@ -40,3 +47,5 @@ class GameDetailSerializer(serializers.Serializer):
     winner = AuthorSerializer(allow_null=True)
     loser = AuthorSerializer(allow_null=True)
     status = serializers.IntegerField()
+    is_draw = serializers.BooleanField()
+    rating = RatingSerializer(many=True)

@@ -9,6 +9,7 @@ class Game(models.Model):
         started = 1
         result_awaiting = 2
         finished = 3
+        cancelled = 4
 
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='my_games')
     rival = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -21,6 +22,7 @@ class Game(models.Model):
     result = models.JSONField(default=None, null=True)
     winner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='win_games', null=True, blank=True)
     loser = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='lose_games', null=True, blank=True)
+    is_draw = models.BooleanField(default=False)
     status = models.IntegerField(choices=Status.choices, default=Status.requested)
 
 
@@ -32,6 +34,8 @@ class Game(models.Model):
                 return self.author_id
             elif rival_score > author_score:
                 return self.rival_id
+            elif author_score == rival_score:
+                return None
 
     def get_loser_id(self):
         if self.game_type == 'FIFA':
@@ -41,6 +45,8 @@ class Game(models.Model):
                 return self.author_id
             elif rival_score < author_score:
                 return self.rival_id
+            elif author_score == rival_score:
+                return None
 
     def is_author(self, user_id: int):
         return self.author_id == user_id

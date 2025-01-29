@@ -1,7 +1,9 @@
+import django_filters
 from django.db import transaction
 from django.db.models import Q
-from django.template.context_processors import request
 from django.utils import timezone
+from django_filters import filters
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404, ListAPIView
@@ -14,6 +16,14 @@ from games.serializers import GameDetailSerializer, GameRequestSerializer, GameR
 from oina.serializers import ErrorSerializer
 from ratings.actions import RatingCalculateAction, GameCalculateAction
 
+
+
+class GameFilter(django_filters.FilterSet):
+    status = django_filters.NumberFilter(field_name="status")
+
+    class Meta:
+        model = Game
+        fields = ['status']
 
 class GameRequestView(APIView):
 
@@ -66,6 +76,33 @@ class GameStartView(APIView):
             return Response(GameDetailSerializer(game).data)
 
         raise APIException('Status doesn\'t change')
+
+
+class GameCancelView(APIView):
+
+    permission_classes = (IsAuthenticated, )
+
+    @extend_schema(responses={
+        200: GameDetailSerializer(),
+        500: ErrorSerializer()
+    })
+    @transaction.atomic
+    def get(self, request, pk: int,  *args, **kwargs):
+
+        game = Game.objects.get(pk=pk)
+
+        if game.status == game.Status.finished:
+            raise APIException('Game already finished')
+
+        if game.is_author(request.user.id) or game.is_rival(request.user.id):
+            game.status = game.Status.cancelled
+            game.save()
+            return Response(GameDetailSerializer(game).data)
+
+        raise APIException('You doesnt change status')
+
+
+
 
 
 class GameResultApproveView(APIView):
@@ -135,8 +172,20 @@ class GameResultApproveView(APIView):
             game.winner_id = game.get_winner_id()
             game.loser_id = game.get_loser_id()
             game.status = game.Status.finished
-            RatingCalculateAction.handle(game.winner_id, game.loser_id)
-            GameCalculateAction.handle(game.winner_id, game.loser_id)
+
+            if game.winner_id is None and game.loser_id is None:
+                game.is_draw = True
+
+            rating_calculate = RatingCalculateAction(game.id,
+                                                            game.winner_id,
+                                                            game.loser_id,
+                                                            [game.author_id,
+                                                             game.rival_id] if game.is_draw else None)
+
+            rating_calculate.handle()
+
+            game_calculate = GameCalculateAction()
+            game_calculate.handle(game)
 
         game.save()
 
@@ -158,6 +207,9 @@ class GameListView(ListAPIView):
 
     serializer_class = GameDetailSerializer
     queryset = Game.objects.all()
+    filterset_class = GameFilter
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    ordering_fields = ['created_at']
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -171,8 +223,6 @@ class GameListView(ListAPIView):
                 return queryset.filter(loser=self.request.user)
 
         return queryset
-
-
 
 
 

@@ -1,9 +1,9 @@
 version: "3.8"
 
 services:
-  fastapi_app:
+  oina_container:
     image: ${IMAGE}
-    container_name: django_app
+    container_name: oina_container
     ports:
       - "8000:8000"
     environment:
@@ -11,3 +11,24 @@ services:
     env_file:
       - .env
     restart: unless-stopped
+  oina_db:
+    image: postgres:16
+    container_name: oina_db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env.db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    command: >
+      postgres -c shared_buffers=256MB
+               -c work_mem=16MB
+               -c effective_cache_size=1GB
+               -c log_statement=all
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U oinauser" ]
+      interval: 10s
+      retries: 5
+      timeout: 5s

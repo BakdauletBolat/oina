@@ -41,6 +41,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     rating_sum = models.DecimalField(default=0, max_digits=19, decimal_places=2)
     winning_sum = models.IntegerField(default=0)
     lost_sum = models.IntegerField(default=0)
+    draw_sum = models.IntegerField(default=0)
 
     objects = UserManager()
 
