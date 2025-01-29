@@ -48,4 +48,4 @@ class GameDetailSerializer(serializers.Serializer):
     loser = AuthorSerializer(allow_null=True)
     status = serializers.IntegerField()
     is_draw = serializers.BooleanField()
-    rating = RatingSerializer(many=True)
+    ratings = RatingSerializer(many=True)
