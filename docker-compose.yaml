@@ -32,3 +32,7 @@ services:
       interval: 10s
       retries: 5
       timeout: 5s
+
+volumes:
+  postgres_data:
+    driver: local
