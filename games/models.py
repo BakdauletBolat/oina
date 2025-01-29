@@ -48,3 +48,7 @@ class Game(models.Model):
     def is_rival(self, user_id: int):
         return self.rival_id == user_id
 
+    class Meta:
+
+        ordering = ['-created_at']
+
