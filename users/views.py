@@ -6,6 +6,7 @@ import sys
 
 from django.conf import settings
 from django.contrib.auth import authenticate
+from django.db.models import UniqueConstraint
 from drf_spectacular.utils import extend_schema
 from rest_framework import views
 from rest_framework.generics import ListAPIView, get_object_or_404
@@ -67,7 +68,17 @@ class AuthView(views.APIView):
             if calculated_hash == check_hash:
                 try:
                     user = User.objects.get(source='telegram', source_user_id=auth_data.get('id'))
+                    user.photo_url = auth_data.get('photo_url')
+                    user.first_name = auth_data.get('first_name')
+                    user.last_name = auth_data.get('last_name')
+                    user.save()
                 except User.DoesNotExist:
+                    user = User.objects.create(source='telegram', source_user_id=auth_data.get('id'),
+                                               username=auth_data.get('username'),
+                                               first_name=auth_data.get('first_name'),
+                                               last_name=auth_data.get('last_name'),
+                                               photo_url=auth_data.get('photo_url'))
+                except UniqueConstraint:
                     user = User.objects.create(source='telegram', source_user_id=auth_data.get('id'),
                                                username=User.get_telegram_username(auth_data.get('username')),
                                                first_name=auth_data.get('first_name'),

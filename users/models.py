@@ -52,7 +52,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     @staticmethod
     def get_telegram_username(username: str):
-        return 't'+username
+        return 't' + username
 
     def save(self, *args, **kwargs):
         is_new = self._state.adding
