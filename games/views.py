@@ -208,8 +208,7 @@ class GameListView(ListAPIView):
     serializer_class = GameDetailSerializer
     queryset = Game.objects.all()
     filterset_class = GameFilter
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    ordering_fields = ['created_at']
+    filter_backends = [DjangoFilterBackend]
 
     def get_queryset(self):
         queryset = super().get_queryset()
