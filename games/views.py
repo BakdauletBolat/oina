@@ -11,8 +11,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from games.actions import GameApproveAction, GameOfferAction
 from games.models import Game
-from games.serializers import GameDetailSerializer, GameRequestSerializer, GameResultApproveSerializer
+from games.serializers import GameSerializer, GameRequestSerializer, GameResultApproveSerializer, GameDetailSerializer
 from oina.serializers import ErrorSerializer
 from ratings.actions import RatingCalculateAction, GameCalculateAction
 
@@ -31,7 +32,7 @@ class GameRequestView(APIView):
     serializer_class = GameRequestSerializer
 
     @extend_schema(responses={
-        200: GameDetailSerializer(),
+        200: GameSerializer(),
         500: ErrorSerializer()
     })
     @transaction.atomic
@@ -49,7 +50,7 @@ class GameRequestView(APIView):
                             rival_id=rival_id,
                             game_type=game_type)
 
-        return Response(GameDetailSerializer(game).data)
+        return Response(GameSerializer(game).data)
 
 
 class GameStartView(APIView):
@@ -57,7 +58,7 @@ class GameStartView(APIView):
     permission_classes = (IsAuthenticated, )
 
     @extend_schema(responses={
-        200: GameDetailSerializer(),
+        200: GameSerializer(),
         500: ErrorSerializer()
     })
     @transaction.atomic
@@ -73,7 +74,7 @@ class GameStartView(APIView):
             game.status = game.Status.started
             game.save()
 
-            return Response(GameDetailSerializer(game).data)
+            return Response(GameSerializer(game).data)
 
         raise APIException('Status doesn\'t change')
 
@@ -83,7 +84,7 @@ class GameCancelView(APIView):
     permission_classes = (IsAuthenticated, )
 
     @extend_schema(responses={
-        200: GameDetailSerializer(),
+        200: GameSerializer(),
         500: ErrorSerializer()
     })
     @transaction.atomic
@@ -97,7 +98,7 @@ class GameCancelView(APIView):
         if game.is_author(request.user.id) or game.is_rival(request.user.id):
             game.status = game.Status.cancelled
             game.save()
-            return Response(GameDetailSerializer(game).data)
+            return Response(GameSerializer(game).data)
 
         raise APIException('You doesnt change status')
 
@@ -110,34 +111,9 @@ class GameResultApproveView(APIView):
     permission_classes = (IsAuthenticated, )
     serializer_class = GameResultApproveSerializer
 
-    @staticmethod
-    def result_set(data: dict, game: Game, offered_user_id: int,
-                   to_approve_user_id: int, type_set: str = 'rival'):
-        attrs = {
-            'rival': {
-                'to_none': 'author_approved_at',
-                'to_set': 'rival_approved_at'
-            },
-            'author': {
-                'to_none': 'rival_approved_at',
-                'to_set': 'author_approved_at'
-            }
-        }
-
-        if data.get('result'):
-            game.result = data.get('result')
-
-        if game.result and data.get('result'):
-            setattr(game, attrs[type_set].get('to_none'), None)
-
-        setattr(game, attrs[type_set].get('to_set'), timezone.now())
-
-        game.status = game.Status.result_awaiting
-        data['result']['offered_user_id'] = offered_user_id
-        data['result']['to_approve_user_id'] = to_approve_user_id
 
     @extend_schema(responses={
-        200: GameDetailSerializer(),
+        200: GameSerializer(),
         500: ErrorSerializer()
     })
     @transaction.atomic
@@ -153,43 +129,16 @@ class GameResultApproveView(APIView):
             raise APIException('Game already finished')
 
         if data.get('action_type') == 'offer':
-            if game.is_rival(request.user.id):
-                self.result_set(data, game, offered_user_id=game.rival_id,
-                                            to_approve_user_id=game.author_id,
-                                            type_set='rival')
-            elif game.is_author(request.user.id):
-                self.result_set(data, game, offered_user_id=game.author_id,
-                                            to_approve_user_id=game.rival_id,
-                                            type_set='author')
-
+            game_offer_action = GameOfferAction(game_id=game.id,
+                                                result=data.get('result'),
+                                                user_id=request.user.id)
+            game_offer_action.handle()
         if data.get('action_type') == 'approve':
-            if game.rival_approved_at is None:
-                game.rival_approved_at = timezone.now()
-            if game.author_approved_at is None:
-                game.author_approved_at = timezone.now()
+            game_approve_action = GameApproveAction(game_id=game.id,
+                                                    result=data.get('result'))
+            game_approve_action.handle()
 
-            game.finished_at = timezone.now()
-            game.winner_id = game.get_winner_id()
-            game.loser_id = game.get_loser_id()
-            game.status = game.Status.finished
-
-            if game.winner_id is None and game.loser_id is None:
-                game.is_draw = True
-
-            rating_calculate = RatingCalculateAction(game.id,
-                                                            game.winner_id,
-                                                            game.loser_id,
-                                                            [game.author_id,
-                                                             game.rival_id] if game.is_draw else None)
-
-            rating_calculate.handle()
-
-            game_calculate = GameCalculateAction()
-            game_calculate.handle(game)
-
-        game.save()
-
-        return Response(GameDetailSerializer(game).data)
+        return Response(GameSerializer(game).data)
 
 
 class GameDetailView(APIView):
@@ -205,7 +154,7 @@ class GameDetailView(APIView):
 
 class GameListView(ListAPIView):
 
-    serializer_class = GameDetailSerializer
+    serializer_class = GameSerializer
     queryset = Game.objects.all()
     filterset_class = GameFilter
     filter_backends = [DjangoFilterBackend]

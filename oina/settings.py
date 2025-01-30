@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'users',
     'ratings',
     'friends',
-    'games'
+    'games',
+    'tournament'
 ]
 
 MIDDLEWARE = [

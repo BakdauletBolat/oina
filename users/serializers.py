@@ -30,4 +30,5 @@ class UserDetailsSerializer(serializers.Serializer):
     rating_sum = serializers.FloatField()
     winning_sum = serializers.IntegerField()
     lost_sum = serializers.IntegerField()
+    role = serializers.CharField()
 

@@ -24,6 +24,8 @@ class Game(models.Model):
     loser = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='lose_games', null=True, blank=True)
     is_draw = models.BooleanField(default=False)
     status = models.IntegerField(choices=Status.choices, default=Status.requested)
+    ordering = models.IntegerField(default=0)
+    tournament = models.ForeignKey('tournament.Tournament', on_delete=models.CASCADE, null=True, blank=True, related_name='tournament_games')
 
 
     def get_winner_id(self):

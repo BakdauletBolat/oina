@@ -27,6 +27,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         TELEGRAM = 'telegram', 'Telegram'
         DJANGO = 'django', 'Django'
 
+    class RoleChoices(models.TextChoices):
+        ADMIN = 'admin', 'Admin'
+        ORGANIZER = 'organizer', 'Organizer'
+        PLAYER = 'player', 'Player'
+
     email = models.EmailField(null=False, blank=False)
     first_name = models.CharField(max_length=30, blank=True, null=True)
     last_name = models.CharField(max_length=30, blank=True, null=True)
@@ -42,6 +47,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     winning_sum = models.IntegerField(default=0)
     lost_sum = models.IntegerField(default=0)
     draw_sum = models.IntegerField(default=0)
+    role = models.CharField(max_length=30,
+                            choices=RoleChoices.choices,
+                            default=RoleChoices.PLAYER)
 
     objects = UserManager()
 
