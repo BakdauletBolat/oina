@@ -53,3 +53,4 @@ class GameSerializer(serializers.Serializer):
 
 class GameDetailSerializer(GameSerializer):
     ratings = RatingSerializer(many=True)
+    tournament_id = serializers.IntegerField(required=False, allow_null=True)
