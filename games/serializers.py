@@ -49,8 +49,8 @@ class GameSerializer(serializers.Serializer):
     status = serializers.IntegerField()
     is_draw = serializers.BooleanField()
     ordering = serializers.IntegerField()
+    tournament_id = serializers.IntegerField(required=False, allow_null=True)
 
 
 class GameDetailSerializer(GameSerializer):
     ratings = RatingSerializer(many=True)
-    tournament_id = serializers.IntegerField(required=False, allow_null=True)
