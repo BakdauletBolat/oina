@@ -48,6 +48,7 @@ class GameSerializer(serializers.Serializer):
     loser = AuthorSerializer(allow_null=True)
     status = serializers.IntegerField()
     is_draw = serializers.BooleanField()
+    ordering = serializers.IntegerField()
 
 
 class GameDetailSerializer(GameSerializer):
