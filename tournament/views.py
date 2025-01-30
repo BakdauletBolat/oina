@@ -84,7 +84,7 @@ class TournamentDetailView(APIView):
                      queryset=Game.objects.select_related("author",
                                                                               "rival",
                                                                               "winner",
-                                                                              "loser").order_by('-ordering')),
+                                                                              "loser").order_by('ordering')),
             Prefetch(
                 "stats",
                 queryset=TournamentUserStat.objects.select_related("user").order_by("-points", "-diff_goals")
