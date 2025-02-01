@@ -4,9 +4,11 @@ import sys
 from django.db.models import Q
 from django.utils import timezone
 from loguru import logger
+from rest_framework.exceptions import APIException
 
 from games.actions import GameApproveAction
 from games.models import Game
+from ratings.actions import RatingCreateAction
 from tournament.models import TournamentUserStat, Tournament
 
 logger.remove()
@@ -115,6 +117,36 @@ class TournamentResultRecordAction:
         tournament_user_action.handle()
 
         return game
+
+
+class TournamentFinishAction:
+
+    DEFAULT_RATING_WINNER = 50
+
+    def __init__(self, tournament_id: int):
+        self.tournament_id = tournament_id
+
+    def handle(self):
+        tournament = Tournament.objects.get(id=self.tournament_id)
+        games_count = Game.objects.filter(tournament_id=tournament.id).count()
+        finished_games_count = Game.objects.filter(tournament_id=tournament.id,
+                                                   status=Game.Status.finished).count()
+
+        if games_count != finished_games_count:
+            raise APIException("Ошибка: Невозможно завершить игру - остались несыгранные матчи")
+
+        winner = TournamentUserStat.objects.order_by('-points', '-diff_goals').first()
+        tournament.winner_id = winner.user.id
+        tournament.status = Tournament.Status.COMPLETED
+        tournament.end_date = timezone.now()
+        tournament.winner_point = self.DEFAULT_RATING_WINNER
+        tournament.save()
+
+        RatingCreateAction.handle(user_id=winner.user.id,
+                                  point=self.DEFAULT_RATING_WINNER)
+
+        return tournament
+
 
 
 class TournamentUserAction:

@@ -22,10 +22,12 @@ class TournamentSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField(max_length=100)
     game_type = serializers.CharField(max_length=100, default="FIFA")
-    start_date = serializers.DateField()
-    end_date = serializers.DateField(required=False)
+    start_date = serializers.DateTimeField()
+    end_date = serializers.DateTimeField(required=False)
     status = serializers.IntegerField(required=False)
     organizer = AuthorSerializer()
+    winner = AuthorSerializer()
+    winner_point = serializers.IntegerField()
 
 
 class TournamentUserStatSerializer(serializers.Serializer):

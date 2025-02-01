@@ -11,13 +11,14 @@ class Tournament(models.Model):
         COMPLETED = 2
 
     name = models.CharField(max_length=100)
-    start_date = models.DateField(auto_now_add=True)
+    start_date = models.DateTimeField(auto_now_add=True)
     game_type = models.CharField(max_length=100, default="FIFA")
-    end_date = models.DateField(null=True, blank=True)
-    status = models.IntegerField(max_length=20, choices=Status.choices,
+    end_date = models.DateTimeField(null=True, blank=True)
+    status = models.IntegerField(choices=Status.choices,
                               default=Status.PLANNED)
     organizer = models.ForeignKey(User, on_delete=models.CASCADE)
-
+    winner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="winner", null=True, blank=True)
+    winner_point = models.IntegerField(default=0)
 
 class TournamentUserStat(models.Model):
     points = models.IntegerField(default=0)

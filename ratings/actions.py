@@ -13,7 +13,10 @@ class RatingCreateAction:
 
     @staticmethod
     def handle(user_id: int, point: float):
-        return models.Rating.objects.create(user_id=user_id, point=point)
+        models.Rating.objects.create(user_id=user_id, point=point)
+        points_sum = models.Rating.objects.filter(user_id=user_id).aggregate(Sum('point')).get('point__sum', 0)
+        user_models.User.objects.filter(pk=user_id).update(rating_sum=float(points_sum))
+        return
 
 
 class RatingCalculateAction:

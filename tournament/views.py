@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from games.models import Game
 from games.serializers import GameSerializer
 from oina.serializers import ErrorSerializer
-from tournament.actions import CreateTournamentAction, TournamentResultRecordAction
+from tournament.actions import CreateTournamentAction, TournamentResultRecordAction, TournamentFinishAction
 from tournament.models import Tournament, TournamentUserStat
 from tournament.serializers import TournamentSerializer, TournamentCreateSerializer, ResultSerializer, \
     TournamentDetailSerializer
@@ -71,6 +71,15 @@ class TournamentRecordResultsView(APIView):
         game = tournament_result_record_action.handle()
 
         return Response(GameSerializer(game).data)
+
+class TournamentFinishView(APIView):
+    permission_classes = (permissions.IsOrganizerPermission,)
+
+    @transaction.atomic
+    def post(self,request, pk: int, *args, **kwargs):
+        tournament_finish_action = TournamentFinishAction(pk)
+        tournament = tournament_finish_action.handle()
+        return Response(TournamentDetailSerializer(tournament).data)
 
 
 class TournamentDetailView(APIView):
